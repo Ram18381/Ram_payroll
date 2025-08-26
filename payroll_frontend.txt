@@ -1,0 +1,35 @@
+import { useState } from "react";
+
+export default function PayrollForm() {
+  const [empId, setEmpId] = useState("");
+  const [salary, setSalary] = useState("");
+  const [days, setDays] = useState("");
+  const [result, setResult] = useState(null);
+
+  const generatePayroll = async () => {
+    const res = await fetch("/generate_payroll", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emp_id: empId, basic_salary: Number(salary), days_present: Number(days) })
+    });
+    setResult(await res.json());
+  };
+
+  return (
+    <div className="p-4">
+      <h2 className="text-xl">Payroll Generator</h2>
+      <input type="text" placeholder="Employee ID" onChange={e => setEmpId(e.target.value)} />
+      <input type="number" placeholder="Basic Salary" onChange={e => setSalary(e.target.value)} />
+      <input type="number" placeholder="Days Present" onChange={e => setDays(e.target.value)} />
+      <button onClick={generatePayroll}>Generate</button>
+
+      {result && (
+        <div className="mt-4">
+          <p>Gross: {result.gross_salary}</p>
+          <p>Deductions: {result.deductions}</p>
+          <p>Net: {result.net_salary}</p>
+        </div>
+      )}
+    </div>
+  );
+}
