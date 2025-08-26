@@ -1,0 +1,32 @@
+from flask import Flask, request, jsonify
+import sqlite3
+
+app = Flask(__name__)
+
+# Calculate salary
+def calculate_salary(basic, days_present, total_days=30):
+    hra = 0.2 * basic
+    da = 0.1 * basic
+    gross = basic + hra + da
+    gross = gross * (days_present / total_days)  # prorated salary
+    deductions = 0.05 * gross  # PF/Tax
+    net = gross - deductions
+    return gross, deductions, net
+
+@app.route("/generate_payroll", methods=["POST"])
+def generate_payroll():
+    data = request.json
+    emp_id = data["emp_id"]
+    basic = data["basic_salary"]
+    days_present = data["days_present"]
+    
+    gross, ded, net = calculate_salary(basic, days_present)
+    return jsonify({
+        "emp_id": emp_id,
+        "gross_salary": gross,
+        "deductions": ded,
+        "net_salary": net
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True)
